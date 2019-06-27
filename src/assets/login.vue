@@ -51,7 +51,10 @@ import axios from "axios"
              method:'post',
              data:this.form
            }).then(({data:{data,meta}})=>{
+             console.log(data.token);
+             
              if(meta.status==200){
+               localStorage.setItem('token',data.token)
                this.$router.push("./home")
              }
             
