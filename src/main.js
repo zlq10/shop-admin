@@ -5,10 +5,7 @@ import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css"
 import "../public/css/index.css"
 
-import * as filters from "../src/filter/index";
-Object.keys(filters).forEach(item => {
-    Vue.filter(item, filters[item])
-})
+
 
 Vue.config.productionTip = false;
 Vue.use(ElementUI)

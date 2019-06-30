@@ -4,7 +4,7 @@
     <el-row type="flex" justify="space-between"  align="middle">
   <el-col :span="6"><img src="../assets/logo.png" alt=""></el-col>
   <el-col><div class="pyg">品优购后台管理系统</div></el-col>
-  <el-col :span="6"><div class="out"><span>欢迎39期星耀会员</span><a href="#">退出</a></div></el-col>
+  <el-col :span="6"><div class="out"><span>欢迎39期星耀会员</span><a href="#" @click='logout'>退出</a></div></el-col>
 </el-row>
   </el-header>
   <el-container>
@@ -87,6 +87,17 @@
 </el-container>
 
 </template>
+<script>
+export default {
+  methods:{
+    logout(){
+      localStorage.removeItem('token');
+      this.$router.push('/login')
+    }
+  }
+}
+</script>
+
 <style>
 .el-container {
     height: 100%;
