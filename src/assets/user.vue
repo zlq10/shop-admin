@@ -37,7 +37,7 @@
       </el-table-column>
       <el-table-column label="操作">
         <template v-slot="{row}">
-          <el-button type="primary" plain size="mini" icon="el-icon-edit"></el-button>
+          <el-button type="primary" plain size="mini" icon="el-icon-edit" @click='editclick(row)'></el-button>
           <el-button type="danger" icon="el-icon-delete" size="mini" @click="del(row.id)"></el-button>
           <el-button type="success" icon="el-icon-check" size="mini">分配角色</el-button>
         </template>
@@ -68,7 +68,25 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="addialog = false">取 消</el-button>
-        <el-button type="primary" @click="submit('addform')">确 定</el-button>
+        <el-button type="primary" @click="submit()">确 定</el-button>
+      </div>
+    </el-dialog>
+     <el-dialog title="修改用户" :visible.sync="editdialog" >
+      <el-form :model="editform" :rules="rules" ref="editform">
+        <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
+          <el-tag type="info">{{editform.username}}</el-tag>
+        </el-form-item>
+      
+        <el-form-item label="邮箱" :label-width="formLabelWidth" prop="email">
+          <el-input v-model="editform.email" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="电话" :label-width="formLabelWidth" prop="mobile">
+          <el-input v-model="editform.mobile" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editdialog= false">取 消</el-button>
+        <el-button type="primary" @click="editsubmit">确 定</el-button>
       </div>
     </el-dialog>
    
@@ -96,7 +114,12 @@ export default {
         email: "",
         mobile: ""
       },
-      editform: {},
+     editform:{
+        username: "",
+        email: "",
+        mobile: "",
+        id:''
+     },
       rules: {
         username: [
           { required: true, message: "请输入用户名", trigger: "blur" },
@@ -115,7 +138,7 @@ export default {
         ],
         mobile: [
           {
-            pattern: /^13[0-9], 14[5,7,9], 15[0, 1, 2, 3, 5, 6, 7, 8, 9], 17[0, 1, 6, 7, 8], 18[0-9]$/,
+            patter:/^/,
             message: "请输入正确的手机格式",
             trigger: "change"
           }
@@ -174,10 +197,7 @@ export default {
           cancelButtonText: "取消",
           type: "warning"
         });
-        this.$message({
-          type: "success",
-          message: "删除成功!"
-        });
+      
         let res = await axios({
           url: `http://localhost:8888/api/private/v1/users/${id}`,
           method: "delete",
@@ -212,24 +232,51 @@ export default {
     adduser() {
       this.addialog = true;
     },
-     submit(formName) {
-      this.$refs[formName].validate(() => {
-        console.log(this.addform);
+    submit(){
+     this.$refs.addform.validate();    
+     axios({
+       url:'http://localhost:8888/api/private/v1/users',
+       method:'post',
+       headers: { Authorization: localStorage.getItem("token") },
+       data:this.addform
+     }).then(res=>{
+       this.getData();
+        this.addialog=false;
+          this.$refs.addform.resetFields();
+      
+     });
+    
+    
+    },
+    editclick(row){
+     
+      this.editdialog= true;
+      axios({
+        url:`http://localhost:8888/api/private/v1/users/${row.id}`,
+         headers: { Authorization: localStorage.getItem("token") },    
+      }).then(res=>{        
+       this.editform=res.data.data
         
-        axios({
-          url: "http://localhost:8888/api/private/v1/users",
-          method: "post",
-          data: this.addform,
-          headers: { Authorization: localStorage.getItem("token") }
-        }).then(res => {
-          console.log(res);
-          
-          this.getData();
-        });
-      });
-      this.addialog = false;
-      this.$refs[formName].resetFields();
+      })
+    },
+    editsubmit(){
+    
+     axios({
+         url: `http://localhost:8888/api/private/v1/users/${this.editform.id}`,
+        method: "put",
+        data:{
+         email:this.editform.email,
+         mobile:this.editform.mobile
+        },
+        headers: { Authorization: localStorage.getItem("token") }
+     }).then(res=>{
+         this.getData();
+           
+        this.editdialog= false;
+     })
+      
     }
+  
   }
 };
 </script>
