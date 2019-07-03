@@ -39,7 +39,7 @@
         <template v-slot="{row}">
           <el-button type="primary" plain size="mini" icon="el-icon-edit" @click='editclick(row)'></el-button>
           <el-button type="danger" icon="el-icon-delete" size="mini" @click="del(row.id)"></el-button>
-          <el-button type="success" icon="el-icon-check" size="mini">分配角色</el-button>
+          <el-button type="success" icon="el-icon-check" size="mini" @click="asright(row)">分配角色</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -51,6 +51,7 @@
       @current-change="curchange"
       :pagenum="pagenum"
     ></el-pagination>
+    <!-- 添加模态框 -->
     <el-dialog title="添加用户" :visible.sync="addialog" class="addialog">
       <el-form :model="addform" :rules="rules" ref="addform">
         <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
@@ -71,6 +72,7 @@
         <el-button type="primary" @click="submit()">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 修改模态框 -->
      <el-dialog title="修改用户" :visible.sync="editdialog" >
       <el-form :model="editform" :rules="rules" ref="editform">
         <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
@@ -87,6 +89,26 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="editdialog= false">取 消</el-button>
         <el-button type="primary" @click="editsubmit">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- 分配角色模态框 -->
+    <el-dialog title="分配角色" :visible.sync="assigndialog" >
+      <el-form :model="assignform"  ref="assignform">
+        <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
+          <el-tag type="info">{{assignform.username}}</el-tag>
+        </el-form-item>
+       <el-form-item label="角色" :label-width="formLabelWidth" prop="username">
+           <el-select placeholder="请选择" v-model='assignform.rid'>
+           <el-option  v-for="item in assinlist" :key='item.id' :value="item.id" :label="item.roleName">
+           
+          </el-option>
+          </el-select>
+           </el-form-item>
+
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="assigndialog= false">取 消</el-button>
+        <el-button type="primary" @click="updataright">确 定</el-button>
       </div>
     </el-dialog>
    
@@ -120,6 +142,13 @@ export default {
         mobile: "",
         id:''
      },
+     assigndialog:false,
+     assignform:{
+       username:'',
+       rid:""
+     },
+     assinlist:[],
+
       rules: {
         username: [
           { required: true, message: "请输入用户名", trigger: "blur" },
@@ -275,6 +304,43 @@ export default {
         this.editdialog= false;
      })
       
+    },
+    async asright(row){
+      this.assigndialog=true;
+      let  list=await axios({
+        url:`users/${row.id}`
+      });
+      console.log(list);
+      
+      this.assignform=list.data.data
+      
+     let res=await axios({
+       url:"roles"
+     });
+    
+     this.assinlist=res.data.data;
+     
+      
+    },
+      async updataright(){
+       let res=await axios({
+         url:`users/${this.assignform.id}/role`,
+         data:{
+           rid:this.assignform.rid
+         },
+         method:'put'
+       });
+       console.log(res);
+       
+      if(res.data.meta.status==200){
+        this.$message({
+          type:'success',
+          message:res.data.meta.msg,
+          duration:1000
+        });
+        this.assigndialog=false
+      }
+       
     }
   
   }
